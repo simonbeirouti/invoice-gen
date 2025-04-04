@@ -19,10 +19,14 @@ Ready to run in production? Please [check our deployment guides](https://hexdocs
 
 ## Instructions
 
-Create an invoice generator:
-- A single liveview where I can add line items with a description, price and quantity
-- It should calculate a total at the bottom
-- It should have an “Export as PDF” that downloads it as a PDF
+1. Clone repo
+2. Run `mix deps.get`
+3. Run `mix phx.server` and go to http://localhost:4000
+4. Go to http://localhost:4000/items
+  - Create a line item
+  - See the total
+5. Click export as PDF
+  - View file in `/priv/static/downloads`
 
 ## Notes
 
