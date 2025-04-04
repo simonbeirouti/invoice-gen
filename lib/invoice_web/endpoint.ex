@@ -23,7 +23,7 @@ defmodule InvoiceWeb.Endpoint do
     at: "/",
     from: :invoice,
     gzip: false,
-    only: InvoiceWeb.static_paths()
+    only: ~w(assets fonts images favicon.ico robots.txt downloads)
 
   # Add this before the existing Plug.Static
   plug Plug.Static,

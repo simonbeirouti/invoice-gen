@@ -5,15 +5,13 @@
       <.button>Add Line Item</.button>
     </.link>
     <button 
+      id="export-pdf-btn"
       phx-click="export_pdf" 
-      phx-hook="HandlePDFExport"
       class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
       Export as PDF
     </button>
   </:actions>
 </.header>
-
-<div id="pdf-download-path" data-path={@download_path}></div>
 
 <.table
   id="items"
