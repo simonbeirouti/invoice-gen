@@ -23,3 +23,9 @@ Create an invoice generator:
 - A single liveview where I can add line items with a description, price and quantity
 - It should calculate a total at the bottom
 - It should have an “Export as PDF” that downloads it as a PDF
+
+## Notes
+
+Refer to commit [0c78732](https://github.com/simonbeirouti/invoice-gen/tree/0c78732f1f551c302731d40074afa3663a6376ba) to see the submitted code
+
+Current merged commit is the working code
