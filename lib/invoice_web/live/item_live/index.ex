@@ -7,8 +7,7 @@ defmodule InvoiceWeb.ItemLive.Index do
     stream_insert: 3,
     stream_delete: 3,
     put_flash: 3,
-    push_navigate: 2,
-    push_event: 2
+    push_navigate: 2
   ]
   import Phoenix.LiveView.Controller, only: [redirect: 2]
   alias Invoice.InvoiceView
@@ -19,7 +18,8 @@ defmodule InvoiceWeb.ItemLive.Index do
     {:ok,
       socket
       |> stream(:items, InvoiceView.list_items())
-      |> assign(:total, calculate_total())}
+      |> assign(:total, calculate_total())
+      |> assign(:download_path, nil)}
   end
 
   @impl true
@@ -144,32 +144,57 @@ defmodule InvoiceWeb.ItemLive.Index do
     </html>
     """
 
-    # Generate PDF using ChromicPDF
-    {:ok, pdf_content} = ChromicPDF.print_to_pdf(
+    # Create a unique directory for each PDF
+    timestamp = DateTime.utc_now() |> DateTime.to_unix()
+    filename = "invoice_#{timestamp}.pdf"
+    base_path = Path.join([Application.app_dir(:invoice), "priv", "static", "downloads"])
+    pdf_path = Path.join(base_path, filename)
+
+    # Ensure directory exists
+    File.mkdir_p!(base_path)
+
+    case ChromicPDF.print_to_pdf(
       {:html, html_content},
-      page_size: :a4,
+      output: pdf_path,
       print_options: %{
         preferCSSPageSize: true,
         displayHeaderFooter: false,
         marginTop: 0.4,
         marginBottom: 0.4,
         marginLeft: 0.4,
-        marginRight: 0.4
+        marginRight: 0.4,
+        printBackground: true
       }
-    )
+    ) do
+      :ok ->
+        # Verify the file exists and is a valid PDF
+        case File.read(pdf_path) do
+          {:ok, content} ->
+            if String.starts_with?(content, "%PDF-") do
+              # File exists and appears to be a valid PDF
+              download_path = "/downloads/#{filename}"
 
-    # Save to a public path that can be accessed via URL
-    filename = "invoice_#{System.system_time()}.pdf"
-    path = Path.join([Application.app_dir(:invoice), "priv", "static", "downloads", filename])
-    File.mkdir_p!(Path.dirname(path))
-    File.write!(path, pdf_content)
+              {:noreply,
+                socket
+                |> put_flash(:info, "PDF generated successfully")
+                |> assign(:download_path, download_path)}
+            else
+              {:noreply,
+                socket
+                |> put_flash(:error, "Generated file is not a valid PDF")}
+            end
 
-    # Return the URL path for download
-    download_path = "/downloads/#{filename}"
+          {:error, reason} ->
+            {:noreply,
+              socket
+              |> put_flash(:error, "Failed to read generated PDF: #{inspect(reason)}")}
+        end
 
-    {:noreply,
-      socket
-      |> assign(:download_path, download_path)}
+      {:error, reason} ->
+        {:noreply,
+          socket
+          |> put_flash(:error, "Failed to generate PDF: #{inspect(reason)}")}
+    end
   end
 
   defp calculate_total do

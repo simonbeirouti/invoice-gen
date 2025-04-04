@@ -18,7 +18,7 @@ defmodule Invoice.Application do
       # {Invoice.Worker, arg},
       # Start to serve requests, typically the last entry
       InvoiceWeb.Endpoint,
-      ChromicPDF,
+      # Only one instance of ChromicPDF with options
       {ChromicPDF, chromium_options: %{}}
     ]
 
